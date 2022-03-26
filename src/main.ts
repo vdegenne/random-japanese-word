@@ -1,13 +1,14 @@
 import { LitElement, html, css } from 'lit'
-import { customElement } from 'lit/decorators.js'
+import { customElement, state } from 'lit/decorators.js'
 import '@material/mwc-snackbar'
 import '@material/mwc-button'
-// import '@material/mwc-icon-button'
+import '@material/mwc-icon-button'
 // import '@material/mwc-dialog'
 // import '@material/mwc-textfield'
 // import '@material/mwc-checkbox'
 import data from '../docs/data/data.json'
 import { Word } from './types'
+import { jishoSearch } from './util'
 
 declare global {
   interface Window {
@@ -18,33 +19,77 @@ declare global {
 
 @customElement('app-container')
 export class AppContainer extends LitElement {
-
   private _data: Word[] = [];
+
+  @state() word!: Word;
+
+  private _excludes: string[] = []
 
   constructor () {
     super()
     this.prepareData()
+    this.pickNewWord()
+
+    this._excludes = localStorage.getItem('random-japanese-word:excludes') ? JSON.parse(localStorage.getItem('random-japanese-word:excludes')!.toString()) : [];
   }
 
   static styles = css`
   :host {
     display: flex;
+    flex-direction: column;
     height: 100vh;
     justify-content: center;
     align-items: center;
     font-family: 'Zen Old Mincho', serif;
   }
+  #word {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 4em;
+    flex:1;
+  }
+  [controls] {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding:12px;
+    box-sizing: border-box;
+  }
   `
   render () {
-    const random = this._data[~~(Math.random() * this._data.length)]
 
     return html`
-    <div style="font-size:4em;"
-      @click=${_=>this.requestUpdate()}>${random.lemma}</div>
+    <div id=word>${this.word.lemma}</div>
+
+    <div controls>
+      <!-- <div> -->
+        <mwc-icon-button icon=menu_book style="color:#4caf50"
+          @click=${() => { jishoSearch(this.word.lemma) }}></mwc-icon-button>
+        <mwc-icon-button icon=delete style="color:#e53935"
+          @click=${_=>{this.addToExcludes(this.word.lemma)}}></mwc-icon-button>
+      <!-- </div> -->
+      <mwc-icon-button icon=casino
+        @click=${_=>this.pickNewWord()}></mwc-icon-button>
+    </div>
     `
   }
 
   prepareData () {
     this._data = data.filter(word => word.lemma.length > 2)
+  }
+
+  pickNewWord() {
+    this.word = this.getNewWord()
+  }
+
+  getNewWord () {
+    return this._data[~~(Math.random() * this._data.length)]
+  }
+
+  addToExcludes (word) {
+    this._excludes = [...new Set([...this._excludes, word])]
+    localStorage.setItem('random-japanese-word:excludes', JSON.stringify(this._excludes))
+    this.pickNewWord()
   }
 }
