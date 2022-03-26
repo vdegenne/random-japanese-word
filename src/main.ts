@@ -37,12 +37,14 @@ export class AppContainer extends LitElement {
     this._excludes = localStorage.getItem('random-japanese-word:excludes') ? JSON.parse(localStorage.getItem('random-japanese-word:excludes')!.toString()) : [];
 
     window.addEventListener('keypress', (e) => {
-      console.log(e)
-      if (e.key === 's') {
+      if (e.key === 'g') {
         this.jishoButton.click()
       }
       if (e.key === 'r') {
         this.randomButton.click()
+      }
+      if (e.key === 's') {
+        this.playAudio()
       }
     })
   }
@@ -55,6 +57,7 @@ export class AppContainer extends LitElement {
     justify-content: center;
     align-items: center;
     font-family: 'Zen Old Mincho', serif;
+    background-color: black;
   }
   #word {
     display: flex;
@@ -62,6 +65,7 @@ export class AppContainer extends LitElement {
     align-items: center;
     font-size: 4em;
     flex:1;
+    color: white;
   }
   [controls] {
     width: 100%;
@@ -83,7 +87,7 @@ export class AppContainer extends LitElement {
         <mwc-icon-button icon=delete style="color:#e53935"
           @click=${_=>{this.addToExcludes(this.word.lemma)}}></mwc-icon-button>
       <!-- </div> -->
-      <mwc-icon-button icon=casino
+      <mwc-icon-button icon=casino style="color:white"
         @click=${_=>this.pickNewWord()}></mwc-icon-button>
     </div>
     `
@@ -95,7 +99,10 @@ export class AppContainer extends LitElement {
 
   pickNewWord() {
     this.word = this.getNewWord()
+    this.playAudio()
+  }
 
+  playAudio () {
     ;(new Audio(`https://assiets.vdegenne.com/data/japanese/audio/${this.word.lemma}`)).play()
   }
 
