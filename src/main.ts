@@ -39,7 +39,7 @@ export class AppContainer extends LitElement {
     const random = this._data[~~(Math.random() * this._data.length)]
 
     return html`
-    <div raised
+    <div style="font-size:4em;"
       @click=${_=>this.requestUpdate()}>${random.lemma}</div>
     `
   }
