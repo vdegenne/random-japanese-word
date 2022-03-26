@@ -41,7 +41,7 @@ export class AppContainer extends LitElement {
       if (e.key === 's') {
         this.jishoButton.click()
       }
-      if (e.key === ' ') {
+      if (e.key === 'r') {
         this.randomButton.click()
       }
     })
