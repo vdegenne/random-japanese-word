@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit'
-import { customElement, state } from 'lit/decorators.js'
+import { customElement, query, state } from 'lit/decorators.js'
 import '@material/mwc-snackbar'
 import '@material/mwc-button'
 import '@material/mwc-icon-button'
@@ -9,6 +9,7 @@ import '@material/mwc-icon-button'
 import data from '../docs/data/data.json'
 import { Word } from './types'
 import { jishoSearch } from './util'
+import { Button } from '@material/mwc-button'
 
 declare global {
   interface Window {
@@ -25,12 +26,25 @@ export class AppContainer extends LitElement {
 
   private _excludes: string[] = []
 
+  @query('mwc-icon-button[icon=menu_book]') jishoButton!: Button;
+  @query('mwc-icon-button[icon=casino]') randomButton!: Button;
+
   constructor () {
     super()
     this.prepareData()
     this.pickNewWord()
 
     this._excludes = localStorage.getItem('random-japanese-word:excludes') ? JSON.parse(localStorage.getItem('random-japanese-word:excludes')!.toString()) : [];
+
+    window.addEventListener('keypress', (e) => {
+      console.log(e)
+      if (e.key === 's') {
+        this.jishoButton.click()
+      }
+      if (e.key === ' ') {
+        this.randomButton.click()
+      }
+    })
   }
 
   static styles = css`
@@ -81,6 +95,8 @@ export class AppContainer extends LitElement {
 
   pickNewWord() {
     this.word = this.getNewWord()
+
+    ;(new Audio(`https://assiets.vdegenne.com/data/japanese/audio/${this.word.lemma}`)).play()
   }
 
   getNewWord () {
