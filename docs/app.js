@@ -415,7 +415,7 @@ const Sr=ae`.material-icons{font-family:var(--mdc-icon-font, "Material Icons");f
       <div>
         <mwc-icon-button icon=menu_book style="color:#4caf50"
           @click=${()=>{var e;e=this.word.lemma,window.open(`https://jisho.org/search/${encodeURIComponent(e)}`,"_blank")}}></mwc-icon-button>
-        <mwc-icon-button icon=menu_book style="color:blue"
+        <mwc-icon-button icon=image style="color:#2196f3"
           @click=${()=>{var e;e=this.word.lemma,window.open(`http://www.google.com/search?q=${encodeURIComponent(e)}&tbm=isch`,"_blank")}}></mwc-icon-button>
       </div>
 

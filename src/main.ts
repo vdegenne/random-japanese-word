@@ -88,7 +88,7 @@ export class AppContainer extends LitElement {
       <div>
         <mwc-icon-button icon=menu_book style="color:#4caf50"
           @click=${() => { jishoSearch(this.word.lemma) }}></mwc-icon-button>
-        <mwc-icon-button icon=menu_book style="color:blue"
+        <mwc-icon-button icon=image style="color:#2196f3"
           @click=${() => { googleImageSearch(this.word.lemma) }}></mwc-icon-button>
       </div>
 
