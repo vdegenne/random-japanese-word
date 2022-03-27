@@ -8,7 +8,7 @@ import '@material/mwc-icon-button'
 // import '@material/mwc-checkbox'
 import data from '../docs/data/data.json'
 import { Word } from './types'
-import { jishoSearch } from './util'
+import { googleImageSearch, jishoSearch } from './util'
 import { Button } from '@material/mwc-button'
 
 declare global {
@@ -28,6 +28,7 @@ export class AppContainer extends LitElement {
 
   @query('mwc-icon-button[icon=menu_book]') jishoButton!: Button;
   @query('mwc-icon-button[icon=casino]') randomButton!: Button;
+  @query('mwc-icon-button[icon=image]') imageButton!: Button;
 
   constructor () {
     super()
@@ -45,6 +46,9 @@ export class AppContainer extends LitElement {
       }
       if (e.key === 's') {
         this.playAudio()
+      }
+      if (e.key === 'a') {
+        this.imageButton.click()
       }
     })
   }
@@ -81,12 +85,15 @@ export class AppContainer extends LitElement {
     <div id=word>${this.word.lemma}</div>
 
     <div controls>
-      <!-- <div> -->
+      <div>
         <mwc-icon-button icon=menu_book style="color:#4caf50"
           @click=${() => { jishoSearch(this.word.lemma) }}></mwc-icon-button>
-        <mwc-icon-button icon=delete style="color:#e53935"
-          @click=${_=>{this.addToExcludes(this.word.lemma)}}></mwc-icon-button>
-      <!-- </div> -->
+        <mwc-icon-button icon=menu_book style="color:blue"
+          @click=${() => { googleImageSearch(this.word.lemma) }}></mwc-icon-button>
+      </div>
+
+      <mwc-icon-button icon=delete style="color:#e53935"
+        @click=${_=>{this.addToExcludes(this.word.lemma)}}></mwc-icon-button>
       <mwc-icon-button icon=casino style="color:white"
         @click=${_=>this.pickNewWord()}></mwc-icon-button>
     </div>
