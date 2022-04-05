@@ -12,3 +12,16 @@ const _missingSound = new Audio('./audio/empty.mp3')
 export function playMissingSound () {
   _missingSound.play()
 }
+
+export async function sleep (timeoutMs: number) {
+  await new Promise(r=>setTimeout(r,timeoutMs))
+}
+
+export const interleave = ([ x, ...xs ], ...rest) =>
+  x === undefined
+    ? rest.length === 0
+      ? []
+      // @ts-ignore
+      : interleave (...rest)
+    // @ts-ignore
+    : [ x, ...interleave (...rest, xs) ]
