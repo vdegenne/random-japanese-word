@@ -10,7 +10,7 @@ import { sleep } from './util'
 export class LoopPlayer extends LitElement {
   @query('mwc-dialog') dialog!: Dialog;
 
-  @state() private pauseBeforeAnswer = 6
+  @state() private pauseBeforeAnswer = 10
   @state() private pauseBeforeNextWord = 10
   @state() private running = false
 
@@ -22,7 +22,7 @@ export class LoopPlayer extends LitElement {
     <mwc-icon-button icon=${this.running ? 'stop' : 'all_inclusive'} style="color:white"
       @click=${()=>{this.running ? this.stop() : this.open()}}></mwc-icon-button>
 
-    <mwc-dialog heading="Loop Options">
+    <mwc-dialog heading="Loop Options" style="--mdc-dialog-min-width:calc(100vw - 32px)">
 
       <!-- sep -->
       <!-- <div style="height:30px"></div> -->
@@ -30,6 +30,7 @@ export class LoopPlayer extends LitElement {
       <p>Wait ${this.pauseBeforeAnswer}s before answer</p>
       <mwc-slider
         discrete
+        withTickMarks
         value=${this.pauseBeforeAnswer}
         step=1
         min=2
@@ -40,10 +41,11 @@ export class LoopPlayer extends LitElement {
       <p>Wait ${this.pauseBeforeNextWord}s before answer</p>
       <mwc-slider
         discrete
+        withTickMarks
         value=${this.pauseBeforeNextWord}
         step=1
         min=2
-        max=100
+        max=50
         @change=${e=>{this.pauseBeforeNextWord=e.detail.value}}
       ></mwc-slider>
 
@@ -88,6 +90,9 @@ export class LoopPlayer extends LitElement {
       console.log('Something went wrong with the speech synthesis. aborting')
       return
     }
+    if (this.running == false) {
+      return
+    }
     // the translation was spoken and finished we wait the new word again
     this._pauseBeforeNextWordTimeout = setTimeout(
       ()=>this.pauseBeforeNextWordTimeoutEndHandler(),
@@ -107,6 +112,9 @@ export class LoopPlayer extends LitElement {
     }
     // new word was loaded and the audio played
     // we wait for the answer
+    if (this.running == false) {
+      return
+    }
     this._pauseBeforeAnswerTimeout = setTimeout(
       ()=>this.pauseBeforeAnswerTimeoutEndHandler(),
       this.pauseBeforeAnswer * 1000

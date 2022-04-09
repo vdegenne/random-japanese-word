@@ -32,14 +32,14 @@ declare global {
 
 @customElement('app-container')
 export class AppContainer extends LitElement {
-  private _data: Word[] = [];
+  // private _data: Word[] = [];
 
   @state() word!: WordObject
-  @state() noSound = true;
+  // @state() noSound = true;
+  @state() private _audio?: HTMLAudioElement;
 
-  private _audio?: HTMLAudioElement;
+  private _ignoreList: string[] = []
 
-  private _excludes: string[] = []
 
   @query('mwc-icon-button[icon=menu_book]') jishoButton!: Button;
   @query('mwc-icon-button[icon=casino]') randomButton!: Button;
@@ -50,7 +50,7 @@ export class AppContainer extends LitElement {
     // this.prepareData()
     this.pickNewWord(false)
 
-    this._excludes = localStorage.getItem('random-japanese-word:excludes') ? JSON.parse(localStorage.getItem('random-japanese-word:excludes')!.toString()) : [];
+    this._ignoreList = localStorage.getItem('random-japanese-word:ignorelist') ? JSON.parse(localStorage.getItem('random-japanese-word:ignorelist')!.toString()) : [];
 
     window.addEventListener('keypress', (e) => {
       if (e.key === 'g') {
@@ -85,14 +85,19 @@ export class AppContainer extends LitElement {
   }
   #word {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     font-size: 6em;
     flex:1;
     color: white;
     font-family: 'Zen Old Mincho', serif;
+    /* position: relative;
+    bottom: 10px; */
   }
   [controls] {
+    position: fixed;
+    bottom: 0;
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -111,13 +116,15 @@ export class AppContainer extends LitElement {
   render () {
 
     return html`
-    <header>
+    <header style="position: absolute;top: 0">
       <span id=jlpt class="jlpt${this.word.jlpt}-color">jlpt ${this.word.jlpt}</span>
       <loop-player></loop-player>
     </header>
 
-    <div id=word
-      @click=${()=>{/*jishoSearch(this.word.word)*/}}>${this.word.word}</div>
+    <div id=word @click=${()=>{/*jishoSearch(this.word.word)*/}}>
+      <span>${this.word.word}</span>
+      <span style="font-size: 0.4em;min-height: 56px;opacity:0.4">${this.word.hiragana || ''}</span>
+    </div>
 
     <div controls>
       <div>
@@ -126,12 +133,12 @@ export class AppContainer extends LitElement {
         <mwc-icon-button icon=menu_book style="color:#4caf50"
           @click=${() => { jishoSearch(this.word.word) }}></mwc-icon-button>
         <mwc-icon-button icon=volume_up style="color:white"
-          ?disabled=${this.noSound}
+          ?disabled=${!this._audio}
           @click=${() => { this.playAudio() }}></mwc-icon-button>
       </div>
 
-      <!-- <mwc-icon-button icon=delete style="color:#e53935"
-        @click=${_=>{this.addToExcludes(this.word[0])}}></mwc-icon-button> -->
+      <mwc-icon-button icon=delete style="color:#e53935"
+        @click=${_=>{this.addToIgnoreList(this.word.word)}}></mwc-icon-button>
       <mwc-icon-button icon=casino style="color:white"
         @click=${()=>{this.onCasinoButtonClick()}}></mwc-icon-button>
     </div>
@@ -152,7 +159,13 @@ export class AppContainer extends LitElement {
   }
 
   async pickNewWord(playAudio = true) {
-    this.word = this.getNewWord()
+    const word = this.getNewWord()
+    if (word === null) {
+      window.toast('End of list')
+      // @TODO what to do
+      return
+    }
+    this.word = word
     if (!playAudio) { return }
     try {
       await this.playAudio()
@@ -166,10 +179,11 @@ export class AppContainer extends LitElement {
       let url = `https://assiets.vdegenne.com/data/japanese/audio/${encodeURIComponent(this.word.hiragana || this.word.word)}`;
       if (!this._audio || this._audio.src !== url) {
         // load the new audio
-        this.noSound = false // assuming there is a sound before loading
+        // this.noSound = false // assuming there is a sound before loading
         this._audio = new Audio(url)
         this._audio.onerror = ()=>{
-          this.noSound = true
+          // this.noSound = true
+          this._audio = undefined
           reject('sound not found')
         }
         this._audio.onended = resolve
@@ -178,10 +192,19 @@ export class AppContainer extends LitElement {
     })
   }
 
-  getNewWord (): WordObject {
+  getNewWord (): WordObject|null {
     // return this._data[~~(Math.random() * this._data.length)]
-    const jlpt = ~~(Math.random() * 1)
-    const word = jlpts[jlpt][~~(Math.random() * jlpts[jlpt].length)] as Word
+    const jlpt = ~~(Math.random() * 2)
+    const list = jlpts[jlpt].filter(i=>!this._ignoreList.includes(i[0]))
+    if (list.length === 0) {
+      window.toast('Nothing to display anymore', 6000)
+      return null
+    }
+    const word = list[~~(Math.random() * list.length)] as Word
+    // do {
+    //   word = jlpts[jlpt][~~(Math.random() * jlpts[jlpt].length)] as Word
+    // } while (this._ignoreList.includes(word))
+
     return {
       jlpt: 5 - jlpt as 5|4|3,
       word: word[0],
@@ -190,11 +213,11 @@ export class AppContainer extends LitElement {
     }
   }
 
-  // DEPRECATED
-  addToExcludes (word) {
-    this._excludes = [...new Set([...this._excludes, word])]
-    localStorage.setItem('random-japanese-word:excludes', JSON.stringify(this._excludes))
-    this.pickNewWord()
+  addToIgnoreList (word) {
+    this._ignoreList = [...new Set([...this._ignoreList, word])]
+    localStorage.setItem('random-japanese-word:ignorelist', JSON.stringify(this._ignoreList))
+    // this.pickNewWord()
+    window.toast('Added to ignore list', 2000)
   }
 
   async speakEnglishTranslation () {
