@@ -33,6 +33,7 @@ declare global {
 @customElement('app-container')
 export class AppContainer extends LitElement {
   // private _data: Word[] = [];
+  @state() lang: 'EN'|'JP' = 'EN'
 
   @state() word!: WordObject
   // @state() noSound = true;
@@ -94,6 +95,7 @@ export class AppContainer extends LitElement {
     font-family: 'Zen Old Mincho', serif;
     /* position: relative;
     bottom: 10px; */
+    width: 100%;
   }
   [controls] {
     position: fixed;
@@ -121,9 +123,13 @@ export class AppContainer extends LitElement {
       <loop-player></loop-player>
     </header>
 
-    <div id=word @click=${()=>{/*jishoSearch(this.word.word)*/}}>
-      <span>${this.word.word}</span>
-      <span style="font-size: 0.4em;min-height: 56px;opacity:0.4">${this.word.hiragana || ''}</span>
+    <div id=word @click=${()=>{this.toggleLanguage()}}>
+        ${this.lang=='EN' ? html`
+            <span style="font-family: Roboto;font-size: 24px !important;">${this.word.english}</span>
+      ` : html`
+            <span>${this.word.word}</span>
+            <span style="font-size: 0.4em;min-height: 56px;opacity:0.4">${this.word.hiragana || ''}</span>
+        `}
     </div>
 
     <div controls>
@@ -143,6 +149,10 @@ export class AppContainer extends LitElement {
         @click=${()=>{this.onCasinoButtonClick()}}></mwc-icon-button>
     </div>
     `
+  }
+
+  private toggleLanguage () {
+    this.lang = this.lang=='EN'?'JP':'EN';
   }
 
   async onCasinoButtonClick () {
